@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>自定义年份月历（还原C++逻辑）</title>
+    <style>
+        body { 
+            font-family: 微软雅黑, Arial; 
+            background: #f8f9fa; 
+            padding: 30px; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333; 
+            text-align: center; 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 15px;
+        }
+        .calendar { 
+            font-family: monospace; 
+            white-space: pre; 
+            background: #f5f5f5; 
+            padding: 20px; 
+            border-radius: 4px; 
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        .btn { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .btn:hover { 
+            background: #45a049; 
+        }
+        input { 
+            padding: 8px; 
+            width: 120px; 
+            margin: 0 10px; 
+            font-size: 16px;
+        }
+        .input-area { 
+            text-align: center; 
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>自定义年份月历生成器</h1>
+        <div class="input-area">
+            <label>年份：</label>
+            <input type="number" id="yearInput" placeholder="例如：2025" min="1900" max="2100">
+            <label>月份：</label>
+            <input type="number" id="monthInput" placeholder="例如：12" min="1" max="12">
+            <button class="btn" onclick="generateCalendar()">生成月历</button>
+        </div>
+        <div class="calendar" id="calendarResult"></div>
+    </div>
+
+    <script>
+        function generateCalendar() {
+            const y = parseInt(document.getElementById('yearInput').value);
+            const month = parseInt(document.getElementById('monthInput').value);
+            const resultDom = document.getElementById('calendarResult');
+
+            if (isNaN(y) || isNaN(month) || month < 1 || month > 12 || y < 1900 || y > 2100) {
+                resultDom.textContent = "输入错误！请输入 1900-2100 之间的年份和 1-12 之间的月份。";
+                return;
+            }
+
+            let year_total, year = y, date, delt = 0;
+            let feb;
+
+            if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
+                feb = 29;
+                year_total = 366;
+            } else {
+                feb = 28;
+                year_total = 365;
+            }
+
+            if (y > 2025) {
+                while (year > 2026) {
+                    delt += year_total;
+                    year--;
+                }
+                switch (month) {
+                    case 12: delt += 30;
+                    case 11: delt += 31;
+                    case 10: delt += 30;
+                    case 9: delt += 31;
+                    case 8: delt += 31;
+                    case 7: delt += 30;
+                    case 6: delt += 31;
+                    case 5: delt += 30;
+                    case 4: delt += 31;
+                    case 3: delt += feb;
+                    case 2: delt += 31;
+                }
+                date = (delt + 4) % 7;
+            } else {
+                while (year < 2025) {
+                    delt += year_total;
+                    year++;
+                }
+                switch (month) {
+                    case 1: delt += 31;
+                    case 2: delt += feb;
+                    case 3: delt += 31;
+                    case 4: delt += 30;
+                    case 5: delt += 31;
+                    case 6: delt += 30;
+                    case 7: delt += 31;
+                    case 8: delt += 31;
+                    case 9: delt += 30;
+                    case 10: delt += 31;
+                    case 11: delt += 30;
+                    default: delt += 31;
+                }
+                date = (4 - delt) % 7 + 7;
+            }
+            if (date === 7) date = 0;
+
+            let days;
+            switch (month) {
+                case 1: days = 31; break;
+                case 2: days = feb; break;
+                case 3: days = 31; break;
+                case 4: days = 30; break;
+                case 5: days = 31; break;
+                case 6: days = 30; break;
+                case 7: days = 31; break;
+                case 8: days = 31; break;
+                case 9: days = 30; break;
+                case 10: days = 31; break;
+                case 11: days = 30; break;
+                default: days = 31; break;
+            }
+
+            let output = `======================${y}年${month}月=======================\n`;
+            output += "周日\t周一\t周二\t周三\t周四\t周五\t周六\n";
+
+            let hang = 0;
+            for (let i = 0; i < date; i++) {
+                output += "   \t";
+                hang++;
+            }
+            for (let i = 0; i < days; i++) {
+                const dayStr = (i + 1).toString().padStart(2, ' ');
+                output += `${dayStr} \t`;
+                hang++;
+                if (hang % 7 === 0) output += "\n";
+            }
+
+            resultDom.textContent = output;
+        }
+    </script>
+</body>
+</html>
